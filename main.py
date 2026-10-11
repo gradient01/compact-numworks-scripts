@@ -1,3 +1,11 @@
+def simple_rstrip(code):
+    """
+    Remove trailing whitespace from each line of the given code.
+    """
+    lines = code.splitlines()
+    new_lines = [line.rstrip() for line in lines]
+    return '\n'.join(new_lines)
+
 def change_indentation(code):
     """
     Change the 4-space indentation of the given code into 2-space indentation.
@@ -59,7 +67,7 @@ def delete_operators_spaces(code):
     """
     Delete spaces around operators in the given code.
     """
-    operators = ["+", "-", "*", "/", "%", "=", "==", "!=", "<", ">", "<=", ">="]
+    operators = ["+", "-", "*", ",", "/", "%", "=", "==", "!=", "<", ">", "<=", ">="]
     for operator in operators:
         code = code.replace(f" {operator} ", operator)
         code = code.replace(f"{operator} ", operator)
@@ -67,6 +75,32 @@ def delete_operators_spaces(code):
     return code
 
 
+def extrem_compression(code):
+    """
+    Put a maximum of the code in a single line.
+    """
+    lines = code.splitlines()
+    new_lines = []
+    last_indent = 0
+    keywords = ["def", "class", "if", "elif", "else", "for", "while", "try", "except", "finally", "with"]
+    for i in range(len(lines)):
+        new_indent = len(lines[i]) - len(lines[i].lstrip())
+        if new_indent == last_indent and not any(lines[i].lstrip().startswith(keyword) for keyword in keywords):
+            new_lines.append(";" + lines[i].strip())
+        else:
+            new_lines.append("\n" + lines[i])
+        last_indent = new_indent
+    lines = ''.join(new_lines)[1:].splitlines()
+    new_lines = []
+    last_indents = [0, 0]
+    for i in range(len(lines)):
+        new_indent = len(lines[i]) - len(lines[i].lstrip())
+        if last_indents[0] < last_indents[1] and new_indent < last_indents[1]:
+            new_lines[-1] = (new_lines[-1][1:]).lstrip()
+        new_lines.append("\n" + lines[i])
+        last_indents[0] = last_indents[1]
+        last_indents[1] = new_indent
+    return ''.join(new_lines)[1:]
 
 if __name__ == "__main__":
     
@@ -79,8 +113,9 @@ if __name__ == "__main__":
     input_code = change_indentation(input_code)
     input_code = delete_docstrings(input_code)
     input_code = delete_comments(input_code)
+    input_code = simple_rstrip(input_code)
     input_code = delete_empty_lines(input_code)
     input_code = delete_operators_spaces(input_code)
-
+    #input_code = extrem_compression(input_code)
     with open(OUTPUT_PATH, "w") as output_file:
         output_file.write(input_code)
